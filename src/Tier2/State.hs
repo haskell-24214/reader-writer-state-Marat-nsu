@@ -4,7 +4,6 @@ import Control.Monad.State
 
 data Registers = Registers { ax :: Int, bx :: Int, blink :: Bool, acc :: Int }
 
-emptyRegisters :: Registers
 emptyRegisters = Registers 0 0 False 0
 
 type Calculation = State Registers Int
