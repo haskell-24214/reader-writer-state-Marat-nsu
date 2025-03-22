@@ -9,28 +9,66 @@ emptyRegisters = Registers 0 0 False 0
 type Calculation = State Registers Int
 
 plus :: Calculation
-plus = undefined
+plus = do
+    s <- get
+    let newAcc = ax s + bx s
+    put $ s { acc = newAcc, blink = False }
+    return newAcc
 
 minus :: Calculation
-minus = undefined
+minus = do
+    s <- get
+    let newAcc = ax s - bx s
+    put $ s { acc = newAcc, blink = False }
+    return newAcc
 
 productS :: Calculation
-productS = undefined
+productS = do
+    s <- get
+    let newAcc = ax s * bx s
+    put $ s { acc = newAcc, blink = False }
+    return newAcc
 
 div :: Calculation
-div = undefined
+div = do
+    s <- get
+    if bx s == 0
+        then put emptyRegisters
+        else do
+            let newAcc = ax s `div` bx s
+            put $ s { acc = newAcc, blink = False }
+    s' <- get
+    return $ acc s'
 
 swap :: Calculation
-swap = undefined
+swap = do
+    s <- get
+    put $ s { ax = bx s, bx = ax s }
+    return 0
 
 blinkS :: Calculation
-blinkS = undefined
+blinkS = do
+    s <- get
+    put $ s { blink = not (blink s) }
+    return 0
 
 accS :: Calculation
-accS = undefined
+accS = do
+    s <- get
+    let currentBlink = blink s
+        newA = if currentBlink then ax s else acc s
+        newB = if currentBlink then acc s else bx s
+    put $ s { ax = newA, bx = newB, blink = not currentBlink }
+    return (acc s)
 
 number :: Int -> Calculation
-number x = undefined
+number x = do
+    s <- get
+    let currentBlink = blink s
+        newA = if currentBlink then ax s else x
+        newB = if currentBlink then x else bx s
+    put $ s { ax = newA, bx = newB, blink = not currentBlink }
+    return x
 
 commandToCalculation :: String -> Calculation
 commandToCalculation s =
@@ -38,6 +76,7 @@ commandToCalculation s =
     "+" -> plus
     "-" -> minus
     "*" -> productS
+    "/" -> div
     "swap" -> swap
     "blink" -> blinkS
     "acc" -> accS
